@@ -6,18 +6,18 @@ class MapDrawer:
     def __init__(self, root):
         self.root = root
         self.root.title("ROS Map Drawer")
+        self.add_borders =  True
 
-        self.canvas_size = 400  # 4m square canvas (1 pixel = 1cm)
-        self.line_thickness = 2  # 2 cm line thickness
+        self.canvas_size = 800  # 4m square canvas (1 pixel = 1cm)
+        self.line_thickness = 4  # 2 cm line thickness
         self.drawing_mode = "freehand"  # Default mode
         self.start_x = None
         self.start_y = None
-        self.point1 = None
+        self.point1 =  None
         self.temp_line = None  # To hold the reference for the temporary line
 
         self.lines = []  # To keep track of drawn lines for undo functionality
 
-        # Set up the canvas
         self.canvas = tk.Canvas(root, bg="white", width=self.canvas_size, height=self.canvas_size)
         self.canvas.pack()
 
@@ -29,17 +29,16 @@ class MapDrawer:
         self.canvas.bind("<ButtonRelease-1>", self.on_button_release)
         self.canvas.bind("<Motion>", self.on_mouse_move)
 
-        # Create GUI elements
         self.coord_label = tk.Label(root, text="Mouse Coordinates: ")
         self.coord_label.pack()
 
         self.point1_entry = tk.Entry(root)
         self.point1_entry.pack(side=tk.LEFT)
-        self.point1_entry.insert(0, "Point 1 (x1,y1)")
+        self.point1_entry.insert(0, "x1,y1")
 
         self.point2_entry = tk.Entry(root)
         self.point2_entry.pack(side=tk.LEFT)
-        self.point2_entry.insert(0, "Point 2 (x2,y2)")
+        self.point2_entry.insert(0, "x2,y2")
 
         self.draw_line_button = tk.Button(root, text="Draw Line", command=self.draw_line_from_points)
         self.draw_line_button.pack(side=tk.LEFT)
@@ -55,7 +54,15 @@ class MapDrawer:
 
         self.export_button = tk.Button(root, text="Export", command=self.export_map)
         self.export_button.pack(side=tk.LEFT)
+        if self.add_borders:
+            self.draw_borders()
+            
 
+    def draw_borders(self):
+        line_l = self.canvas.create_line(0,0, 0, self.canvas_size, fill="black", width= 8)
+        line_r = self.canvas.create_line(0,self.canvas_size, self.canvas_size, self.canvas_size, fill="black", width= 8)
+        line_u = self.canvas.create_line(self.canvas_size,self.canvas_size, self.canvas_size, 0, fill="black", width= 8)
+        line_d = self.canvas.create_line(self.canvas_size,0, 0, 0, fill="black", width= 8)
     def switch_mode(self):
         if self.drawing_mode == "freehand":
             self.drawing_mode = "line"
@@ -105,7 +112,7 @@ class MapDrawer:
                 self.temp_line = None
 
     def on_mouse_move(self, event):
-        self.coord_label.config(text=f"Mouse Coordinates: ({event.x}, {event.y})")
+        self.coord_label.config(text=f"Mouse Coordinates: ({int(event.x/2)}, {int(event.y/2)})")
 
     def draw_line_from_points(self):
         try:
@@ -134,6 +141,9 @@ class MapDrawer:
         self.image = Image.new("1", (self.canvas_size, self.canvas_size), 1)  # Reset the image
         self.draw = ImageDraw.Draw(self.image)  # Reset the draw object
         self.lines.clear()  # Clear the list of lines
+        if self.add_borders:
+            self.draw_borders()
+
 
     def export_map(self):
         file_path = filedialog.asksaveasfilename(defaultextension=".pgm", filetypes=[("PGM files", "*.pgm")])
@@ -145,7 +155,7 @@ class MapDrawer:
         yaml_file_path = pgm_file_path.replace(".pgm", ".yaml")
         with open(yaml_file_path, "w") as f:
             f.write("image: {}\n".format(pgm_file_path))
-            f.write("resolution: 0.01\n")  # 1 pixel = 1 cm
+            f.write("resolution: 0.005\n")  # 1 pixel = 1 cm
             f.write("origin: [0.0, 0.0, 0.0]\n")
             f.write("negate: 0\n")
             f.write("occupied_thresh: 0.65\n")
@@ -154,4 +164,4 @@ class MapDrawer:
 if __name__ == "__main__":
     root = tk.Tk()
     app = MapDrawer(root)
-    root.mainloop()
+    root.mainloop() 
