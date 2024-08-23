@@ -21,7 +21,7 @@ class MapDrawer:
         self.canvas = tk.Canvas(root, bg="white", width=self.canvas_size, height=self.canvas_size)
         self.canvas.pack()
 
-        self.image = Image.new("1", (self.canvas_size, self.canvas_size), 1)  # '1' mode for binary image (black & white)
+        self.image = Image.new("L", (self.canvas_size, self.canvas_size), 255)  # '1' mode for binary image (black & white)
         self.draw = ImageDraw.Draw(self.image)
 
         self.canvas.bind("<Button-1>", self.on_button_press)
