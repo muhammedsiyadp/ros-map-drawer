@@ -10,7 +10,7 @@ class MapDrawer:
 
         self.canvas_size = 800  # 4m square canvas (1 pixel = 1cm)
         self.line_thickness = 4  # 2 cm line thickness
-        self.drawing_mode = "freehand"  # Default mode
+        self.drawing_mode = "line"  # Default mode
         self.start_x = None
         self.start_y = None
         self.point1 =  None
@@ -43,7 +43,7 @@ class MapDrawer:
         self.draw_line_button = tk.Button(root, text="Draw Line", command=self.draw_line_from_points)
         self.draw_line_button.pack(side=tk.LEFT)
 
-        self.mode_button = tk.Button(root, text="Switch to Line Mode", command=self.switch_mode)
+        self.mode_button = tk.Button(root, text="Switch to Freehand Mode", command=self.switch_mode)
         self.mode_button.pack(side=tk.LEFT)
 
         self.undo_button = tk.Button(root, text="Undo", command=self.undo_last_action)
@@ -90,6 +90,7 @@ class MapDrawer:
             self.start_y = event.y
 
     def on_mouse_drag(self, event):
+        self.coord_label.config(text=f"Mouse Coordinates: ({int(event.x/2)}, {int(event.y/2)})")
         if self.drawing_mode == "freehand" and self.start_x is not None:
             self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill="black", width=self.line_thickness)
             self.draw.line([self.start_x, self.start_y, event.x, event.y], fill=0, width=self.line_thickness)  # '0' for black
