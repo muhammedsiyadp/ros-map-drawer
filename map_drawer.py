@@ -9,7 +9,7 @@ class MapDrawer:
         self.add_borders =  True
 
         self.canvas_size = 800  # 4m square canvas (1 pixel = 1cm)
-        self.line_thickness = 4  # 2 cm line thickness
+        self.line_thickness = 10# 2 cm line thickness
         self.drawing_mode = "line"  # Default mode
         self.start_x = None
         self.start_y = None
@@ -59,10 +59,17 @@ class MapDrawer:
             
 
     def draw_borders(self):
-        line_l = self.canvas.create_line(0,0, 0, self.canvas_size, fill="black", width= 8)
-        line_r = self.canvas.create_line(0,self.canvas_size, self.canvas_size, self.canvas_size, fill="black", width= 8)
-        line_u = self.canvas.create_line(self.canvas_size,self.canvas_size, self.canvas_size, 0, fill="black", width= 8)
-        line_d = self.canvas.create_line(self.canvas_size,0, 0, 0, fill="black", width= 8)
+	    line_l = self.canvas.create_line(0,0, 0, self.canvas_size, fill="black", width= 24)
+	    line_r = self.canvas.create_line(0,self.canvas_size, self.canvas_size, self.canvas_size, fill="black", width= 12)
+	    line_u = self.canvas.create_line(self.canvas_size,self.canvas_size, self.canvas_size, 0, fill="black", width= 12)
+	    line_d = self.canvas.create_line(self.canvas_size,0, 0, 0, fill="black", width= 12)
+	    # Draw borders in the PIL image
+        
+	    self.draw.line([0, 0, 0, self.canvas_size], fill=0, width=8)
+	    self.draw.line([0, self.canvas_size, self.canvas_size, self.canvas_size], fill=0, width=8)
+	    self.draw.line([self.canvas_size, self.canvas_size, self.canvas_size, 0], fill=0, width=8)
+	    self.draw.line([self.canvas_size, 0, 0, 0], fill=0, width=8)
+
     def switch_mode(self):
         if self.drawing_mode == "freehand":
             self.drawing_mode = "line"
@@ -90,7 +97,7 @@ class MapDrawer:
             self.start_y = event.y
 
     def on_mouse_drag(self, event):
-        self.coord_label.config(text=f"Mouse Coordinates: ({int(event.x/2)}, {int(event.y/2)})")
+        self.coord_label.config(text=f"Mouse Coordinates- x: ({int(event.x/2)},{int((self.canvas_size - event.x)/2)}), y: ({int((self.canvas_size - event.y)/2)},{int(event.y/2)})")
         if self.drawing_mode == "freehand" and self.start_x is not None:
             self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill="black", width=self.line_thickness)
             self.draw.line([self.start_x, self.start_y, event.x, event.y], fill=0, width=self.line_thickness)  # '0' for black
@@ -113,7 +120,7 @@ class MapDrawer:
                 self.temp_line = None
 
     def on_mouse_move(self, event):
-        self.coord_label.config(text=f"Mouse Coordinates: ({int(event.x/2)}, {int(event.y/2)})")
+        self.coord_label.config(text=f"Mouse Coordinates- x: ({int(event.x/2)},{int((self.canvas_size - event.x)/2)}), y: ({int((self.canvas_size - event.y)/2)},{int(event.y/2)})")
 
     def draw_line_from_points(self):
         try:
@@ -139,7 +146,7 @@ class MapDrawer:
 
     def clear_all(self):
         self.canvas.delete("all")
-        self.image = Image.new("1", (self.canvas_size, self.canvas_size), 1)  # Reset the image
+        self.image = Image.new("L", (self.canvas_size, self.canvas_size), 255)  # Reset the image
         self.draw = ImageDraw.Draw(self.image)  # Reset the draw object
         self.lines.clear()  # Clear the list of lines
         if self.add_borders:
@@ -147,7 +154,10 @@ class MapDrawer:
 
 
     def export_map(self):
+        self.draw_borders()
         file_path = filedialog.asksaveasfilename(defaultextension=".pgm", filetypes=[("PGM files", "*.pgm")])
+        		
+        
         if file_path:
             self.image.save(file_path)
             self.write_yaml(file_path)
